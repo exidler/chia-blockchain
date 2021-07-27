@@ -253,6 +253,16 @@ class FarmerAPI:
 
                 return
 
+            pool_public_key = new_proof_of_space.proof.pool_public_key
+            if pool_public_key is not None:
+                await self.farmer.og_pooling.new_proof_of_space(
+                    new_proof_of_space,
+                    peer,
+                    pool_public_key,
+                    computed_quality_string
+                )
+                return
+
     @api_request
     async def respond_signatures(self, response: harvester_protocol.RespondSignatures):
         """
@@ -327,7 +337,8 @@ class FarmerAPI:
                             )
                             return None
 
-                        pool_target: Optional[PoolTarget] = PoolTarget(self.farmer.pool_target, uint32(0))
+                        pool_target_puzzle_hash: bytes = self.farmer.og_pooling.get_pool_target()
+                        pool_target: Optional[PoolTarget] = PoolTarget(pool_target_puzzle_hash, uint32(0))
                         assert pool_target is not None
                         pool_target_signature: Optional[G2Element] = AugSchemeMPL.sign(
                             self.farmer.pool_sks_map[pool_pk], bytes(pool_target)
@@ -430,10 +441,13 @@ class FarmerAPI:
                     p2_singleton_puzzle_hash,
                 )
             )
+
+        difficulty, sub_slot_iters = self.farmer.og_pooling.new_signage_point(new_signage_point)
+
         message = harvester_protocol.NewSignagePointHarvester(
             new_signage_point.challenge_hash,
-            new_signage_point.difficulty,
-            new_signage_point.sub_slot_iters,
+            difficulty,
+            sub_slot_iters,
             new_signage_point.signage_point_index,
             new_signage_point.challenge_chain_sp,
             pool_difficulties,
@@ -471,7 +485,8 @@ class FarmerAPI:
         await self.farmer.server.send_to_specific([msg], node_id)
 
     @api_request
-    async def farming_info(self, request: farmer_protocol.FarmingInfo):
+    @peer_required
+    async def farming_info(self, request: farmer_protocol.FarmingInfo, peer: ws.WSChiaConnection):
         self.farmer.state_changed(
             "new_farming_info",
             {
@@ -485,6 +500,7 @@ class FarmerAPI:
                 }
             },
         )
+        self.farmer.og_pooling.farming_info(request, peer)
 
     @api_request
     async def respond_plots(self, _: harvester_protocol.RespondPlots):
