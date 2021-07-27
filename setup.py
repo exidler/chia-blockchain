@@ -109,13 +109,16 @@ kwargs = dict(
         "chia.ssl": ["chia_ca.crt", "chia_ca.key", "dst_root_ca.pem"],
         "mozilla-ca": ["cacert.pem"],
     },
-    version="1.2.3-sweet",
-    # use_scm_version={"fallback_version": "unknown-no-.git-directory"},
+    use_scm_version={
+        "fallback_version": "unknown-no-.git-directory",
+        "tag_regex": r"^(?P<prefix>v)?(?P<version>[^\+]+(?:\+sweet\d*))(?P<suffix>.*)?$",
+        "version_scheme": lambda v: f"{v.tag.public}.dev{v.distance}" if v.dirty or v.distance else str(v.tag),
+        "local_scheme": lambda v: f"+{v.tag.local}" if v.tag.local and (v.dirty or v.distance) else "",
+    },
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     zip_safe=False,
 )
-
 
 if __name__ == "__main__":
     setup(**kwargs)
