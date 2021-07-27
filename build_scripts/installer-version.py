@@ -7,11 +7,10 @@ from setuptools_scm import get_version
 # example: 1.0b5.dev225
 def main():
     windows = len(sys.argv) > 1 and "win" in sys.argv[1]  # Special case windows to 0.1.6225
+    
+    fixed_version="1.2.3-sweet"
 
-#    print("1.2.3-sweet")
-#    return
-
-    scm_full_version = get_version(root="..", relative_to=__file__)
+    scm_full_version = get_version(root="..", relative_to=__file__, version_scheme=lambda _:fixed_version, local_scheme=lambda _:"")
     # scm_full_version = "1.0.5.dev22"
     os.environ["SCM_VERSION"] = scm_full_version
 

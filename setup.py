@@ -111,9 +111,8 @@ kwargs = dict(
     },
     use_scm_version={
         "fallback_version": "unknown-no-.git-directory",
-        "tag_regex": r"^(?P<prefix>v)?(?P<version>[^\+]+(?:\+sweet\d*)?)(?P<suffix>.*)?$",
-        "version_scheme": lambda v: f"{v.tag.public}.post1.dev{v.distance}" if v.dirty or v.distance else str(v.tag),
-        "local_scheme": lambda v: f"+{v.tag.local}" if v.tag.local and (v.dirty or v.distance) else "",
+        "version_scheme": lambda v: "1.2.3+sweet",
+        "local_scheme": lambda v: "",
     },
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
